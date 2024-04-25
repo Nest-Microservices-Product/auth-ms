@@ -19,6 +19,7 @@ const getEnvVars = () => {
   return {
     port: envVars.PORT,
     natsServers: envVars.NATS_SERVERS,
+    databaseUrl: envVars.DATABASE_URL,
   };
 };
 
