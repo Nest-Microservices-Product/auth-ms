@@ -6,5 +6,6 @@ export const envSchema = joi
     PORT: joi.number().required(),
     NATS_SERVERS: joi.array().items(joi.string()).required(),
     DATABASE_URL : joi.string().required(),
+    JWT_SECRET : joi.string().required(),
   })
   .unknown(true);

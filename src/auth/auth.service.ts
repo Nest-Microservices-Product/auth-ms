@@ -31,6 +31,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
           message: 'Invalid credentials',
         });
       }
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userRest } = user;
       return {
         user: userRest,
@@ -43,7 +44,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
       });
     }
   }
-  
+
   async registerUser(registerUserReq: RegisterUserDto) {
     const { email, password, name } = registerUserReq;
     try {
@@ -63,6 +64,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
           name: name,
         },
       });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userRest } = newUser;
       return {
         user: userRest,
