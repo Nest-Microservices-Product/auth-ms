@@ -83,6 +83,28 @@ export class AuthService extends PrismaClient implements OnModuleInit {
     }
   }
 
+  async verifyToken(token: string) {
+    try {
+      const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        iat: _,
+        exp,
+        ...userPayload
+      } = await this.jwtService.decode(token);
+      const currentDate = new Date();
+      const expiresDate = new Date(exp);
+      return {
+        user: userPayload,
+        isExpired: +expiresDate <= +currentDate / 1000,
+      };
+    } catch (error) {
+      throw new RpcException({
+        status: HttpStatus.UNAUTHORIZED,
+        message: error.message,
+      });
+    }
+  }
+
   private async signJwt(payload: JwtPayloadI) {
     return this.jwtService.sign(payload);
   }
