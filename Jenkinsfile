@@ -70,7 +70,7 @@ pipeline {
             steps {
                 script {
                     def envSuffix = env.DEPLOY_ENV
-                    def dbUrl = "db-url-${envSuffix}"
+                    def dbUrl = "db-auth-url-${envSuffix}"
 
                     withCredentials([
                         sshUserPrivateKey(credentialsId: SSH_CRED_ID, keyFileVariable: 'SSH_KEY'),
