@@ -1,15 +1,18 @@
-import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { LoginUserDto, RegisterUserDto } from './dto';
-import { RpcException } from '@nestjs/microservices';
+import { ClientProxy, RpcException } from '@nestjs/microservices';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayloadI } from './entities';
+import { RecoverPasswordDto } from './dto/recoverPassword.dto';
+import { NATS_SERVICE } from 'src/shared/constants/NATS_SERVICE';
+import { AUTH_SERVICES_NAMES } from 'src/shared/entities/AuthServicesNames';
 
 @Injectable()
 export class AuthService extends PrismaClient implements OnModuleInit {
   private readonly logger = new Logger('Auth-service');
-  constructor(private readonly jwtService: JwtService) {
+  constructor(private readonly jwtService: JwtService, @Inject(NATS_SERVICE) private readonly client: ClientProxy) {
     super();
   }
   onModuleInit() {
@@ -107,5 +110,68 @@ export class AuthService extends PrismaClient implements OnModuleInit {
 
   private async signJwt(payload: JwtPayloadI) {
     return this.jwtService.sign(payload);
+  }
+
+  async getTokenRecoverPassword(email: string) {
+    try {
+
+      const user = await this.user.findUnique({
+        where: { email: email },
+      });
+
+      if (!user) {
+        throw new RpcException({
+          status: HttpStatus.NOT_ACCEPTABLE,
+          message: 'User not existed',
+        });
+      }
+
+      const { password: _, ...userRest } = user;
+
+      const token = await this.signJwt(userRest);
+
+      return {
+        token
+      };
+
+    } catch (error) {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
+    }
+  }
+
+  async recoverPassword(recoverPassword: RecoverPasswordDto) {
+    try {
+      
+      const decodePaylod = await this.verifyToken(recoverPassword.token);
+      
+      if(decodePaylod.isExpired) {
+        throw new RpcException({
+          status: HttpStatus.UNAUTHORIZED,
+          message: "Token is expired"
+        });
+      }
+
+      const updateUser = await this.user.update({
+        where: {
+          id: decodePaylod.user.id
+        },
+        data: {
+          password: bcrypt.hashSync(recoverPassword.password, 10) || recoverPassword.password
+        }
+      });
+
+      return {
+        message: "User's password was updated successfully",
+      };
+
+    } catch (error) {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: error.message,
+      });
+    }
   }
 }

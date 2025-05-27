@@ -23,6 +23,6 @@ async function bootstrap() {
     }),
   );
   await app.listen();
-  logger.log('Auth microservice started on prod :D');
+  logger.log('Auth microservice started');
 }
 bootstrap();
