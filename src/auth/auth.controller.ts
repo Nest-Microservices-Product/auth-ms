@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
 import { LoginUserDto, RegisterUserDto } from './dto';
+import { RecoverPasswordDto } from './dto/recoverPassword.dto';
 
 @Controller()
 export class AuthController {
@@ -19,4 +20,13 @@ export class AuthController {
   verifyToken(@Payload() token : string) {
     return this.authService.verifyToken(token);
   }
+  @MessagePattern({ cmd: 'auth.get.password'})
+  getTokenRecoverPassword(@Payload() email: string) {
+    return this.authService.getTokenRecoverPassword(email);
+  }
+  @MessagePattern({ cmd: 'auth.recover.password'})
+  recoverPassword(@Payload() recoverPassword: RecoverPasswordDto) {
+    return this.authService.recoverPassword(recoverPassword);
+  }
+
 }

@@ -3,6 +3,7 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { envs } from 'src/config/getEnvs';
+import { NatsModule } from './transports/nats.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { envs } from 'src/config/getEnvs';
       secret: envs.jwtSecret,
       signOptions: { expiresIn: '1h' },
     }),
+    NatsModule
   ],
   controllers: [AuthController],
   providers: [AuthService],
